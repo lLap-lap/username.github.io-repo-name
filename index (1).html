@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>职位管理器</title>
+    <style>
+        #jobsList {
+            list-style: none;
+            padding: 0;
+        }
+        .job-item {
+            border: 1px solid #ddd;
+            margin-top: 5px;
+            padding: 10px;
+        }
+        .job-item button {
+            margin-left: 5px;
+        }
+        #queryInput, #updateForm, #deleteConfirm {
+            margin-top: 10px;
+        }
+        #deleteConfirm button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>职位管理器</h1>
+
+    <input type="text" id="queryInput" placeholder="输入查询关键字" oninput="filterJobs()">
+    <button onclick="clearFilter()">清除过滤</button>
+
+    <ul id="jobsList"></ul>
+
+    <div id="updateForm" style="display: none;">
+        <input type="hidden" id="jobId">
+        <input type="text" id="newName" placeholder="新职位名称">
+        <input type="text" id="newLocation" placeholder="新工作地点">
+        <input type="text" id="newSalary" placeholder="新薪资范围">
+        <button onclick="applyUpdate()">应用更新</button>
+    </div>
+
+    <div id="deleteConfirm" style="display: none;">
+        <p>确定要删除这个职位吗？</p>
+        <button onclick="confirmDelete(true)">是</button>
+        <button onclick="confirmDelete(false)">否</button>
+    </div>
+
+    <script>
+        // 示例职位数据
+        var jobs = [
+            { id: 1, name: '软件工程师', location: '北京', salary: '20k-40k' },
+            { id: 2, name: '产品设计师', location: '上海', salary: '15k-30k' }
+        ];
+        var filteredJobs = jobs; // 用于存储过滤后的职位列表
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderJobs();
+        });
+
+        function renderJobs() {
+            var jobsList = document.getElementById('jobsList');
+            jobsList.innerHTML = '';
+            filteredJobs.forEach(function(job) {
+                var jobItem = document.createElement('li');
+                jobItem.className = 'job-item';
+                jobItem.textContent = `职位: ${job.name}, 地点: ${job.location}, 薪资: ${job.salary}`;
+                jobItem.innerHTML += ` <button onclick="selectJobForUpdate(${job.id})">更新</button>
+                    <button onclick="selectJobForDelete(${job.id})">删除</button>`;
+                jobsList.appendChild(jobItem);
+            });
+        }
+
+        function filterJobs() {
+            var query = document.getElementById('queryInput').value.toLowerCase();
+            filteredJobs = jobs.filter(function(job) {
+                return job.name.toLowerCase().includes(query) ||
+                       job.location.toLowerCase().includes(query) ||
+                       job.salary.toLowerCase().includes(query);
+            });
+            renderJobs();
+        }
+
+        function clearFilter() {
+            document.getElementById('queryInput').value = '';
+            filteredJobs = jobs;
+            renderJobs();
+        }
+
+        function selectJobForUpdate(jobId) {
+            document.getElementById('jobId').value = jobId;
+            var job = jobs.find(j => j.id === jobId);
+            document.getElementById('newName').value = job.name;
+            document.getElementById('newLocation').value = job.location;
+            document.getElementById('newSalary').value = job.salary;
+            document.getElementById('updateForm').style.display = 'block';
+        }
+
+        function applyUpdate() {
+            var jobId = parseInt(document.getElementById('jobId').value);
+            var job = jobs.find(j => j.id === jobId);
+            job.name = document.getElementById('newName').value;
+            job.location = document.getElementById('newLocation').value;
+            job.salary = document.getElementById('newSalary').value;
+            document.getElementById('updateForm').style.display = 'none';
+            renderJobs(); // 重新渲染职位列表以显示更新
+            alert('职位更新成功！');
+        }
+
+        function selectJobForDelete(jobId) {
+            var job = jobs.find(j => j.id === jobId);
+            if (job) {
+                alert(`您确定要删除职位：${job.name} 吗？`);
+                document.getElementById('deleteConfirm').style.display = 'block';
+            }
+        }
+
+        function confirmDelete(confirmed) {
+            if (confirmed) {
+                var jobId = parseInt(document.getElementById('jobId').value);
+                jobs = jobs.filter(job => job.id !== jobId);
+                filteredJobs = filteredJobs.filter(job => job.id !== jobId); // 同时更新过滤列表
+                renderJobs(); // 重新渲染职位列表以移除已删除的职位
+                alert('职位删除成功！');
+            }
+            document.getElementById('deleteConfirm').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
